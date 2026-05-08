@@ -202,3 +202,11 @@ _SUCCESS
 *.snappy.parquet
 part-*.json
 part-*.csv
+
+# Large reference/data files (>50 MB — keep on GCS/farm, not in git)
+gwas-catalog-*.tsv
+gwas-catalog-*.xlsx
+si_gwas_*.csv
+study_index_gwas.tsv
+archive/*/training_set/*.tsv
+archive/gentropy_paper/data/
