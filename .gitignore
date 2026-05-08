@@ -184,20 +184,11 @@ app/
 
 # EPIraction manifest preserved
 !data/epiraction-manifest.tsv
-.Rproj.user
 
-
-# R
+# R session artefacts (from archive dirs)
 .Rhistory
 .RData
-.Ruserdata
-.Rapp.history
 .Rproj.user/
-.Rbuildignore
-.Renviron
-.Renviron.site
-.Rds
-EGL_and_training_set.Rproj
 
 *parquet
 archive/gentropy_paper/data/*
