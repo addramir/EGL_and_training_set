@@ -253,3 +253,64 @@ FINAL TRAINING SET                    132,970         200,536   (+51%)
 | Replication: pre-computed → on-the-fly | 2.5× more permissive | **Too lenient.** Next release should use stricter replication criteria (e.g., cross-cohort, cross-ancestry, or a curated study list) |
 | FM size doubles (31M → 58M) | More data | Driven by the 26.03 release growth, not a pipeline choice |
 | Literature evidence (EuroPMC) | Skipped in both | Consistent; literature adds noise via indirect associations |
+
+---
+
+## Dark Matter Analysis (Notebook 04)
+
+> Analysis of the 26.03 final training set (200,536 rows). See `04_nonnearestTSS_predictability.ipynb`.
+
+### Dark Matter Definition
+
+A positive is **dark matter** when both conditions hold:
+
+1. **No functional genomics signal:**
+   - All QTL colocalisation features = 0: eQTL CLPP/H4, pQTL CLPP/H4, sQTL CLPP/H4
+   - E2G mean = 0
+   - `vepMaximum < 0.6` (below protein-altering variant threshold, SO:0001818)
+   - *(Note: `transPQtlColocH4Maximum` is absent from the OT 26.03 feature matrix)*
+
+2. **Not the nearest gene** — all four neighbourhood distance features < 1.0:
+   `distanceSentinelTssNeighbourhood`, `distanceSentinelFootprintNeighbourhood`,
+   `distanceTssMeanNeighbourhood`, `distanceFootprintMeanNeighbourhood`
+
+Nearest-gene positives (any neighbourhood distance = 1.0) are **always kept** — proximity-based learning is valid even without functional signal.
+
+### Dark Matter Prevalence
+
+| Group | Dark matter | Total | % |
+|-------|------------|-------|---|
+| Nearest TSS (score = 1.0) | 0 | 7,201 | **0.0%** |
+| Non-nearest (score < 1.0) | 2,928 | 5,859 | **50.0%** |
+| **All positives** | **2,928** | **13,060** | **22.4%** |
+
+33 additional non-nearest positives were rescued from dark matter by carrying a protein-altering variant (`vepMaximum ≥ 0.6`).
+
+### Locus Removal — All-Positive Rule
+
+A `studyLocusId` is removed only when **all** of its positives are dark matter. If any positive in the locus has signal, the locus is kept in full.
+
+### Cleaned Training Set
+
+| Metric | Original | Cleaned | Change |
+|--------|---------|---------|--------|
+| Total rows | 200,536 | 152,687 | −47,849 (−23.9%) |
+| Positives | 13,060 | 10,377 | −2,683 (−20.5%) |
+| Negatives | 187,476 | 142,310 | −45,166 (−24.1%) |
+| % nearest TSS | 55.1% | **69.4%** | +14.3 pp |
+| % non-nearest | 44.9% | **30.6%** | −14.3 pp |
+| Dark matter loci removed | — | **2,639** | — |
+| Residual dark matter positives | 2,928 | **245** | in mixed loci (by design) |
+
+The 245 residual dark matter positives in the cleaned set reside in loci where at least one sibling positive has signal — they are retained as collateral of the all-positive removal rule.
+
+### Signal Improvement After Cleaning
+
+Fold-change of non-nearest positives over negatives (mean feature values):
+
+| Feature | Original | Cleaned | Improvement |
+|---------|---------|---------|-------------|
+| sQTL CLPP | 25.0× | **52.3×** | +2.1× |
+| pQTL CLPP | 23.6× | **56.6×** | +2.4× |
+| eQTL CLPP | 9.7× | **20.8×** | +2.1× |
+| E2G | 4.7× | **9.9×** | +2.1× |
